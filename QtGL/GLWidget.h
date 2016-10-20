@@ -1,6 +1,6 @@
 #include <QOpenGLWidget>
 #include <QOpenGLShaderProgram>
-//#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_4_3_Core>
 #include <QMatrix4x4>
 #include <QPaintEvent>
 #include <QPainter>
@@ -10,18 +10,11 @@
 
 #include <opencv2/core/core.hpp>
 
-class GLWidget: public QOpenGLWidget//, protected QOpenGLFunctions
+class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 {
 	Q_OBJECT
 
 public:
-	enum State{
-        s_none ,
-        s_block,
-
-		s_count
-	};
-
     explicit GLWidget(QWidget *parent = 0);
 
     virtual void setStateBar(QStatusBar *loger){statBar = loger;}
@@ -55,6 +48,9 @@ protected:
 	virtual void mousePressEvent  (QMouseEvent *event);
 	virtual void mouseMoveEvent   (QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
+    
+    static const std::string vertSrc;
+    static const std::string fragSrc;
 
 private:
 	//GLWidget Width & Height

@@ -1,13 +1,6 @@
 #include "GLWidget.h"
+#include <QGLFormat>
 #include <cmath>
-
-#ifdef ANDROID
-#include <GLES2/gl2.h>
-#define _PX_FMT GL_RGB
-#else
-#include <GL/gl.h>
-#define _PX_FMT GL_RGB32F
-#endif
 
 const unsigned char GLWidget::noTex[4] = {0, 0, 255, 1};
 
@@ -30,7 +23,8 @@ GLWidget::GLWidget(QWidget *parent)
 void GLWidget::initializeGL()
 {
 	makeCurrent();
-/*
+    initializeOpenGLFunctions();
+    //*
 	qDebug() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
 
 	QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
@@ -54,22 +48,17 @@ void GLWidget::initializeGL()
 
     _texW = 1, _texH = 1;
     glBindTexture(GL_TEXTURE_2D, _tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, _PX_FMT, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, noTex);
-#ifdef ANDROID
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#else
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, noTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);// Linear Filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);// Linear Filtering
-#endif
 
     //init shader
-//    bool d = true;
+    bool d = true;
     _shader = new QOpenGLShaderProgram(this);
-//    d &= _shader->addShaderFromSourceCode(QOpenGLShader::Vertex  , DRAGO03::vertSrc.c_str());
-//    d &= _shader->addShaderFromSourceCode(QOpenGLShader::Fragment, DRAGO03::fragSrc.c_str());
-//    d &= _shader->link();
-//    qDebug() << "shader compiled:\n" << _shader->log();
+    d &= _shader->addShaderFromSourceCode(QOpenGLShader::Vertex  , vertSrc.c_str());
+    d &= _shader->addShaderFromSourceCode(QOpenGLShader::Fragment, fragSrc.c_str());
+    d &= _shader->link();
+    qDebug() << "shader compiled:\n" << _shader->log();
 //    _uExpo  = _shader->uniformLocation("expo");
 //    _uBias  = _shader->uniformLocation("lgBiasDlgHalf");
 //    _uGama  = _shader->uniformLocation("gama");
@@ -138,15 +127,14 @@ void GLWidget::paintGL(){
     //畫圖
 //    float n = _ldMax * 0.01f * std::log(10.0f) / std::log(_lwMax + 1.0f);
 //    float lgBiasDlgHalf = std::log(_bias) / std::log(0.5f);
-//    _shader->bind();
+    _shader->bind();
 //    _shader->setUniformValue(_uExpo , _expo );
 //    _shader->setUniformValue(_uBias , lgBiasDlgHalf );
 //    _shader->setUniformValue(_uGama , _gama );
 //    _shader->setUniformValue(_uLwMax, _lwMax);
 //    _shader->setUniformValue(_uLdMax, n);
 
-#ifdef ANDROID
-    //* openGLES 3.0
+    //* openGLES 3.0 == opengl 4.3
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _tex);
     _shader->setUniformValue(_shader->uniformLocation("my_texture"), 0);
@@ -158,8 +146,8 @@ void GLWidget::paintGL(){
                           4, GL_FLOAT, false, 4*sizeof(float), vertice+2);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, allIndices);
     //*/
-#else
-    //*opengl 1.1
+    
+    /*opengl 1.1
     glBindTexture(GL_TEXTURE_2D, _tex);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -174,9 +162,8 @@ void GLWidget::paintGL(){
     glVertex2d(-_x + _dx, -_y + _dy); glTexCoord2d(1, 1);
     glVertex2d( _x + _dx, -_y + _dy); glTexCoord2d(1, 0);
     glEnd();//*/
-#endif
 
-    //_shader->release();
+    _shader->release();
 }
 
 //更新貼圖
@@ -185,14 +172,14 @@ void GLWidget::updateTexture(const cv::Mat &rgb){
         _texW = 1, _texH = 1;
         makeCurrent();
         glBindTexture(GL_TEXTURE_2D, _tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, _PX_FMT, _texW, _texH, 0, GL_RGB, GL_UNSIGNED_BYTE, noTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGB, GL_UNSIGNED_BYTE, noTex);
     }
     else{
         _texW = rgb.cols, _texH = rgb.rows;
         makeCurrent();
         glBindTexture(GL_TEXTURE_2D, _tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, _PX_FMT, _texW, _texH, 0, GL_RGB, GL_FLOAT, rgb.data);
-		//glTexImage2D(GL_TEXTURE_2D, 0, _PX_FMT, _texW, _texH, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgb.data);
+        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGB, GL_FLOAT, rgb.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgb.data);
     }
 
     needUpdate = true;
