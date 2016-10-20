@@ -29,13 +29,6 @@ private:
     // Widget for opengl
     GLWidget *glw;
 
-    // controlls
-    //cv::Mat _tmpImg; // for tone mapped image
-
-    // utils
-    void updateImg();
-    void updateParam();
-
 protected:
     // keyboard event
     virtual void keyPressEvent  (QKeyEvent *e);
@@ -43,7 +36,7 @@ protected:
 
 public slots:
     // menu
-    bool openDragoList();
+    bool openImage();
 };
 
 #endif // MAINWINDOW_H

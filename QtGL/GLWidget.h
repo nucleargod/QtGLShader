@@ -8,7 +8,9 @@
 #include <QMouseEvent>
 #include <QStatusBar>
 
+#ifdef USE_CV
 #include <opencv2/core/core.hpp>
+#endif
 
 class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 {
@@ -17,9 +19,12 @@ class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 public:
     explicit GLWidget(QWidget *parent = 0);
 
+    virtual float getExpo(){return _expo;}
     virtual void setStateBar(QStatusBar *loger){statBar = loger;}
+#ifdef USE_CV
     virtual void updateTexture(const cv::Mat &img);
-    virtual void updateParam(float expo, float bias, float gama, float lwMax);
+#endif
+    virtual void updateParam(float expo);
     inline void resetTrans(){
         _zoom=(1), _dx=(0), _dy=(0);
         if(inited) needUpdate=true;
@@ -41,8 +46,8 @@ protected:
 
     //shader
     QOpenGLShaderProgram *_shader;
-    //float  _expo , _bias , _gama , _lwMax , _ldMax ;
-    //GLuint _uExpo, _uBias, _uGama, _uLwMax, _uLdMax;
+    float  _expo ;
+    GLuint _uExpo;
 
 	//Mouse event
 	virtual void mousePressEvent  (QMouseEvent *event);

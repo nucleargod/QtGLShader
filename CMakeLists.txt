@@ -1,9 +1,6 @@
 project(QtGLShader)
 cmake_minimum_required(VERSION 2.8)
 
-# c++11
-#set (CMAKE_CXX_STANDARD 11)
-
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
@@ -20,18 +17,20 @@ set(UI_NAME "QtGL")
 # Find library
 find_package(Qt5Widgets)
 find_package(Qt5OpenGL)
-#find_package(OpenCV)
+if(USE_CV)
+  find_package(OpenCV)
+  add_definitions("-DUSE_CV")
+endif(USE_CV)
 add_definitions(-DQT_OPENGL_3) # force qt to use gl 3.0
 find_package(OpenGL REQUIRED)
 
 # get 3rd source and lib
-#list(APPEND Third_LIB_LIST ${OpenCV_LIBS})
-#list(APPEND Third_DIR_LIST ${OpenCV_INCLUDE_DIRS})
+if(USE_CV)
+  list(APPEND Third_LIB_LIST ${OpenCV_LIBS})
+  list(APPEND Third_DIR_LIST ${OpenCV_INCLUDE_DIRS})
+endif(USE_CV)
 list(APPEND Third_LIB_LIST ${OPENGL_LIBRARIES})
 list(APPEND Third_DIR_LIST ${OPENGL_INCLUDE_DIR})
-
-# debug message
-#MESSAGE("OpenCV_INSTALL_PATH: " + ${OpenCV_INSTALL_PATH})
 
 # global ui src
 aux_source_directory(${PROJECT_SOURCE_DIR}/${UI_NAME}  UI_SRC_LIST)

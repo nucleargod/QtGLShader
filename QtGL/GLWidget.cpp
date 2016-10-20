@@ -13,11 +13,7 @@ GLWidget::GLWidget(QWidget *parent)
     dRMousePress = false;
     dMMousePress = false;
 
-//    _uExpo  =-1; _expo  = 1.0f;
-//    _uBias  =-1; _bias  = 0.8f;
-//    _uGama  =-1; _gama  = 1.0f;
-//    _uLwMax =-1; _lwMax = 1.0f;
-//    _uLdMax =-1; _ldMax = 100.0f;
+    _uExpo  =-1; _expo  = 1.0f;
 }
 
 void GLWidget::initializeGL()
@@ -59,11 +55,7 @@ void GLWidget::initializeGL()
     d &= _shader->addShaderFromSourceCode(QOpenGLShader::Fragment, fragSrc.c_str());
     d &= _shader->link();
     qDebug() << "shader compiled:\n" << _shader->log();
-//    _uExpo  = _shader->uniformLocation("expo");
-//    _uBias  = _shader->uniformLocation("lgBiasDlgHalf");
-//    _uGama  = _shader->uniformLocation("gama");
-//    _uLwMax = _shader->uniformLocation("lwMax");
-//    _uLdMax = _shader->uniformLocation("n");
+    _uExpo  = _shader->uniformLocation("expo");
 
 	inited = true;
     needUpdate = true;
@@ -91,7 +83,6 @@ void GLWidget::paintEvent(QPaintEvent *e)
 	if(!inited) return;
 
     if(needUpdate){
-        //qDebug() << "paintEvent: " << updateClockGL();
         //更新系統
         makeCurrent();
         paintGL();
@@ -125,14 +116,8 @@ void GLWidget::paintGL(){
     const GLubyte allIndices[] = {0, 1, 2, 3};
 	
     //畫圖
-//    float n = _ldMax * 0.01f * std::log(10.0f) / std::log(_lwMax + 1.0f);
-//    float lgBiasDlgHalf = std::log(_bias) / std::log(0.5f);
     _shader->bind();
-//    _shader->setUniformValue(_uExpo , _expo );
-//    _shader->setUniformValue(_uBias , lgBiasDlgHalf );
-//    _shader->setUniformValue(_uGama , _gama );
-//    _shader->setUniformValue(_uLwMax, _lwMax);
-//    _shader->setUniformValue(_uLdMax, n);
+    _shader->setUniformValue(_uExpo , _expo );
 
     //* openGLES 3.0 == opengl 4.3
     glActiveTexture(GL_TEXTURE0);
@@ -166,31 +151,34 @@ void GLWidget::paintGL(){
     _shader->release();
 }
 
+#ifdef USE_CV
 //更新貼圖
 void GLWidget::updateTexture(const cv::Mat &rgb){
+    qDebug() << "updateTexture";
     if(rgb.empty()){
+        qDebug() << "updateTexture with noTex";
         _texW = 1, _texH = 1;
         makeCurrent();
         glBindTexture(GL_TEXTURE_2D, _tex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGB, GL_UNSIGNED_BYTE, noTex);
     }
     else{
+        qDebug() << "updateTexture with mat";
         _texW = rgb.cols, _texH = rgb.rows;
         makeCurrent();
         glBindTexture(GL_TEXTURE_2D, _tex);
         //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGB, GL_FLOAT, rgb.data);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgb.data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_BGR, GL_UNSIGNED_BYTE, rgb.data);
     }
 
     needUpdate = true;
     update();
 }
+#endif
 
-void GLWidget::updateParam(float expo, float bias, float gama, float lwMax){
-//    _expo  = expo ;
-//    _bias  = bias ;
-//    _gama  = gama ;
-//    _lwMax = lwMax < 1e-5f ? 1e-5f : lwMax;
+void GLWidget::updateParam(float expo){
+    _expo  = expo ;
+    log("updateParam: %g", expo);
 
     needUpdate = true;
     update();
@@ -204,13 +192,6 @@ void GLWidget::mousePressEvent(QMouseEvent *event){
 	if(event->button() == Qt::LeftButton){
         dLMousePress = true;
         mLMousePressPos = event->pos();
-
-        /*switch(_state){
-        case State::s_none : mLMousePressPos = event->pos();
-        case State::s_block: break;
-
-		default: break;
-		}//*/
 	}
     else if(event->button() == Qt::RightButton){
         dRMousePress = true;
@@ -245,11 +226,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event){
         mLMousePressPos = event->pos();
         //qDebug() << "Mouse(Left) clicked: " << mMouseLeftPressPos;
         log("Mouse(Left) clicked: %d, %d", mLMousePressPos.x(), mLMousePressPos.y());
-		/*switch(_state){
-        case State::s_block:break;
-
-		default: break;
-		}//*/
 	}
 
     dLMousePress = false;
