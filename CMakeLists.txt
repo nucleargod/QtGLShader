@@ -21,7 +21,6 @@ if(USE_CV)
   find_package(OpenCV)
   add_definitions("-DUSE_CV")
 endif(USE_CV)
-add_definitions(-DQT_OPENGL_3) # force qt to use gl 3.0
 find_package(OpenGL REQUIRED)
 
 # get 3rd source and lib

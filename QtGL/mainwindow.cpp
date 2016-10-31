@@ -36,9 +36,8 @@ void MainWindow::keyPressEvent  (QKeyEvent *e){
 
 }
 void MainWindow::keyReleaseEvent(QKeyEvent *e){
-    //*--- 測試用，兼 API 使用範例。有閒的再把它做進 UI
     switch(e->key()){
-    case Qt::Key_R:  // 重設縮放與位移
+    case Qt::Key_R:  // 重設縮放與位移 reset transform
         glw->resetTrans();
         break;
     case Qt::Key_A:
@@ -53,7 +52,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e){
     }
 }
 
-//*--- menu 功能
+//*--- menu functions
 bool MainWindow::openImage(){
     qDebug() << "openImage";
     QString fileName = QFileDialog::getOpenFileName(this, 

@@ -1,8 +1,10 @@
 #include "GLWidget.h"
 #include <QGLFormat>
+#include <iostream>
 #include <cmath>
 
-const unsigned char GLWidget::noTex[4] = {0, 0, 255, 1};
+//default texture: blue
+const unsigned char GLWidget::noTex[4] = {0, 0, 255, 255};
 
 GLWidget::GLWidget(QWidget *parent)
     :QOpenGLWidget(parent), statBar(NULL), inited(false),
@@ -16,26 +18,21 @@ GLWidget::GLWidget(QWidget *parent)
     _uExpo  =-1; _expo  = 1.0f;
 }
 
-void GLWidget::initializeGL()
-{
-	makeCurrent();
+//*--- QT GL Function overide
+void GLWidget::initializeGL(){
+    makeCurrent();
     initializeOpenGLFunctions();
     //*
-	qDebug() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
+    std::cout << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
+    putchar('\n');
 
-	QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
-	qDebug() << "Driver Version String:" << versionString;
-    qDebug() << "Current Context:" << this->format();//*/
-
-	// Set up the rendering context, load shaders and other resources, etc.:
-	//QOpenGLFunctions *qoglfunc = QOpenGLContext::currentContext()->functions();
-	//qoglfunc->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// 	glShadeModel(GL_SMOOTH);
-	// 	glClearDepth(1.0);
-	// 	glEnable(GL_DEPTH_TEST);
+    std::string versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    std::cout << "Driver Version String:" << versionString;
+    putchar('\n');
+    fflush(stdout);
+    //std::cout << "Current Context:" << this->format();//*/
 	
-	// GL initialization
+    // GL initialization
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     //init texture
@@ -61,29 +58,16 @@ void GLWidget::initializeGL()
     needUpdate = true;
 }
 
-void GLWidget::resizeGL(int w, int h)
-{
+void GLWidget::resizeGL(int w, int h){
 	widgetW = w;
-	widgetH = h;
-    //makeCurrent();
-
-	//  glViewport(0, 0, (GLint)w, (GLint)h);
-	// 
-	// 	glMatrixMode(GL_PROJECTION);
-	// 	glLoadIdentity();
-	// 
-	// 	gluPerspective(45.0, (GLfloat)w/(GLfloat)h, 0.1, 100.0);
-	// 	glMatrixMode(GL_MODELVIEW);
-	// 	glLoadIdentity();
+    widgetH = h;
 }
 
-// 60 fps
-void GLWidget::paintEvent(QPaintEvent *e)
-{
+void GLWidget::paintEvent(QPaintEvent *e){
+    // 60 hz
 	if(!inited) return;
 
-    if(needUpdate){
-        //更新系統
+    if(needUpdate){ //更新系統 do update
         makeCurrent();
         paintGL();
         needUpdate = false;
@@ -95,18 +79,18 @@ void GLWidget::paintEvent(QPaintEvent *e)
 void GLWidget::paintGL(){
     glClear(GL_COLOR_BUFFER_BIT);
 
-    //確保圖片長寬比
+    //確保圖片長寬比 keep aspect ratio of image
     float rs = (float)widgetW / (float)widgetH;
     float ri = (float)_texW / (float)_texH;
     float _x=1.0f, _y=1.0f;
     if(rs > ri){ _x = ri / rs; }//y = 1.0
     else { _y = rs / ri;}//x=1.0
 
-    //縮放與位移
+    //縮放與位移 moving & scaling
     _x = _x*_zoom;
     _y = _y*_zoom;
 
-    //頂點資料
+    //頂點資料 vertex data
     float vertice[] = {
         _x + _dx,  _y + _dy, 1, 0,
        -_x + _dx,  _y + _dy, 0, 0,
@@ -115,7 +99,7 @@ void GLWidget::paintGL(){
     };
     const GLubyte allIndices[] = {0, 1, 2, 3};
 	
-    //畫圖
+    //畫圖 draw
     _shader->bind();
     _shader->setUniformValue(_uExpo , _expo );
 
@@ -151,8 +135,8 @@ void GLWidget::paintGL(){
     _shader->release();
 }
 
+//*--- update utils
 #ifdef USE_CV
-//更新貼圖
 void GLWidget::updateTexture(const cv::Mat &rgb){
     qDebug() << "updateTexture";
     if(rgb.empty()){
@@ -184,9 +168,7 @@ void GLWidget::updateParam(float expo){
     update();
 }
 
-//************************************************************
-//  Function: mouseEvent (Windows move with mouse press.)
-//============================================================
+//*--- Mouse events
 void GLWidget::mousePressEvent(QMouseEvent *event){  
 
 	if(event->button() == Qt::LeftButton){
@@ -203,7 +185,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event){
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event){
-        if(dLMousePress){//左鍵位移
+        if(dLMousePress){//左鍵位移 left key for moving
             QPoint np = event->pos();
             _dx += ((float)(np.x() - mLMousePressPos.x())*2.0f / (float)widgetW);
             _dy -= ((float)(np.y() - mLMousePressPos.y())*2.0f / (float)widgetH);
@@ -211,7 +193,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event){
             mLMousePressPos = np;
             needUpdate = true;
         }
-        if(dRMousePress){//右鍵縮放
+        if(dRMousePress){//右鍵縮放 right key for scaling
             QPoint np = event->pos();
             _zoom += ((float)(np.y() - mRMousePressPos.y()) / (float)widgetH);
             mRMousePressPos = np;
@@ -232,9 +214,10 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event){
     dRMousePress = false;
     dMMousePress = false;
 }
-//************************************************************
 
-//用 printf 的格式輸出字串到狀態列
+//*--- debug utils
+// 用 printf 的格式輸出字串到狀態列
+// log formated string to status bar
 void GLWidget::log(const char* s, ...){
     if(statBar == NULL) return;
 

@@ -1,6 +1,7 @@
+#include <QGLWidget>
 #include <QOpenGLWidget>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLFunctions_3_0>
 #include <QMatrix4x4>
 #include <QPaintEvent>
 #include <QPainter>
@@ -12,15 +13,18 @@
 #include <opencv2/core/core.hpp>
 #endif
 
-class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
+class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_3_0
 {
 	Q_OBJECT
 
 public:
     explicit GLWidget(QWidget *parent = 0);
 
+    //field access
     virtual float getExpo(){return _expo;}
     virtual void setStateBar(QStatusBar *loger){statBar = loger;}
+
+    //update utils
 #ifdef USE_CV
     virtual void updateTexture(const cv::Mat &img);
 #endif
@@ -30,11 +34,11 @@ public:
         if(inited) needUpdate=true;
     }
 
-    //用 printf 的格式輸出字串到狀態列
+    //debug utils
     void log(const char* s, ...);
 
 protected:
-	//QT GL Function use
+    //QT GL Function overide
 	void initializeGL();
 	void resizeGL(int w, int h);
 	void paintEvent(QPaintEvent *e);
@@ -73,5 +77,6 @@ private:
     int _texW, _texH;
     float _zoom, _dx, _dy;
 
+    //default texture
     static const unsigned char noTex[4];
 };
