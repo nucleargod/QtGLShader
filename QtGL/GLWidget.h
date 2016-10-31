@@ -1,7 +1,7 @@
 #include <QGLWidget>
 #include <QOpenGLWidget>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions_3_0>
+#include <QOpenGLFunctions_4_3_Core>
 #include <QMatrix4x4>
 #include <QPaintEvent>
 #include <QPainter>
@@ -13,7 +13,7 @@
 #include <opencv2/core/core.hpp>
 #endif
 
-class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_3_0
+class GLWidget: public QOpenGLWidget, protected QOpenGLFunctions_4_3_Core
 {
 	Q_OBJECT
 

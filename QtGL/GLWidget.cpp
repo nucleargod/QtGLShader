@@ -22,17 +22,14 @@ GLWidget::GLWidget(QWidget *parent)
 void GLWidget::initializeGL(){
     makeCurrent();
     initializeOpenGLFunctions();
-    //*
-    std::cout << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
-    putchar('\n');
 
-    std::string versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-    std::cout << "Driver Version String:" << versionString;
-    putchar('\n');
-    fflush(stdout);
-    //std::cout << "Current Context:" << this->format();//*/
+    //* debug output for checking your opengl version
+    qDebug() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
+    QString versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    qDebug() << "Driver Version String:" << versionString;
+    qDebug() << "Current Context:" << this->format();//*/
 	
-    // GL initialization
+    //*--- GL initialization
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     //init texture
@@ -45,7 +42,7 @@ void GLWidget::initializeGL(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);// Linear Filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);// Linear Filtering
 
-    //init shader
+    //*--- init shader
     bool d = true;
     _shader = new QOpenGLShaderProgram(this);
     d &= _shader->addShaderFromSourceCode(QOpenGLShader::Vertex  , vertSrc.c_str());
@@ -109,14 +106,14 @@ void GLWidget::paintGL(){
     _shader->setUniformValue(_shader->uniformLocation("my_texture"), 0);
     glEnableVertexAttribArray(_shader->attributeLocation("a_position"));
     glVertexAttribPointer(_shader->attributeLocation("a_position"),
-                          4, GL_FLOAT, false, 4*sizeof(float), vertice);
+        4, GL_FLOAT, false, 4*sizeof(float), vertice);
     glEnableVertexAttribArray(_shader->attributeLocation("a_texCoord"));
     glVertexAttribPointer(_shader->attributeLocation("a_texCoord"),
-                          4, GL_FLOAT, false, 4*sizeof(float), vertice+2);
+        4, GL_FLOAT, false, 4*sizeof(float), vertice+2);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, allIndices);
     //*/
     
-    /*opengl 1.1
+    /*opengl 1.2
     glBindTexture(GL_TEXTURE_2D, _tex);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
