@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QGLWidget>
 #include <QOpenGLWidget>
 #include <QOpenGLShaderProgram>
