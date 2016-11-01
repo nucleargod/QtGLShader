@@ -9,14 +9,13 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), img(NULL), clmt()
-  #ifdef USE_CV
+#ifdef USE_CV
     , cvImg(2, 2, CV_8UC4)
-  #endif
+#endif
 {
     ui->setupUi(this);
     statBar = ui->statusBar;
 
-    printf("setup\n"); fflush(stdout);
     // image
     img = new unsigned char[6*4];
     img[0 ]= 255; img[1 ]= 0; img[2 ]= 0; img[3 ]= 0; img[4 ]= 128; img[5 ]= 0; img[6 ]= 0; img[7 ]= 0;
@@ -24,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef USE_CV
     memcpy(cvImg.data, img, 4*4);
 #endif
-    printf("image\n"); fflush(stdout);
 
     // Create GLWidget
     glw = new GLWidget();
@@ -32,7 +30,6 @@ MainWindow::MainWindow(QWidget *parent) :
     glw->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
     glw->setMouseTracking(true);
     glw->setStateBar(statBar);
-    //glw->updateParam(_expo, _bias, _gama, _lwMax);
     glw->update();
 
     // menu
@@ -61,20 +58,19 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e){
         glw->updateParam(glw->getExpo()-0.01f);
         break;
     case Qt::Key_T:
+        //Do transpose with OpenCL
 #ifdef USE_CV
     {
         unsigned char *p = cvImg.data;
         clmt.transpose(p, p, cvImg.cols, cvImg.rows);
-        size_t tmp = cvImg.rows;
-        cvImg.rows = cvImg.cols;
-        cvImg.cols = tmp;
+        std::swap(cvImg.rows, cvImg.cols);
         glw->updateTexture(cvImg);
     }
 #else
         if(!clmt.transpose(img, img, 2, 2)) qDebug() << "fail!";
         glw->updateTexture(img, 2, 2);
 #endif
-    if(true){
+    {   // show time consuming on status bar
         double t = clmt.kernelTime(), mt = clmt.memoryTime();
         glw->log("kernel: %lg s, memory: %lg s", t, mt);
     }
@@ -91,13 +87,14 @@ bool MainWindow::openImage(){
     QString fileName = QFileDialog::getOpenFileName(this, 
         "讀取圖片", "./", "*", 0, QFileDialog::DontUseNativeDialog);
     if (fileName.isEmpty()) return false;
-#ifdef WIN32
+
+#ifdef WIN32 //convert path
     std::string path(fileName.toLocal8Bit().constData());
 #else
     std::string path(fileName.toUtf8().constData());
 #endif
 
-#ifdef USE_CV
+#ifdef USE_CV //read image with opencv
     glw->log("讀取進度: %s ...", path.c_str());
     cv::Mat img = cv::imread(path.c_str());
     cv::cvtColor(img, cvImg, CV_BGR2BGRA);

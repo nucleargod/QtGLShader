@@ -147,7 +147,6 @@ void GLWidget::updateTexture(const cv::Mat &rgb){
         _texW = rgb.cols, _texH = rgb.rows;
         makeCurrent();
         glBindTexture(GL_TEXTURE_2D, _tex);
-        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGB, GL_FLOAT, rgb.data);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_BGRA, GL_UNSIGNED_BYTE, rgb.data);
     }
 
