@@ -1,3 +1,6 @@
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
+
 #include <QGLWidget>
 #include <QOpenGLWidget>
 #include <QOpenGLShaderProgram>
@@ -80,3 +83,5 @@ private:
     //default texture
     static const unsigned char noTex[4];
 };
+
+#endif
