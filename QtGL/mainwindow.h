@@ -9,6 +9,11 @@
 #include <QFileDialog>
 #include <QDoubleSpinBox>
 #include "GLWidget.h"
+#include "ocl/CLfunc.h"
+
+#ifdef USE_CV
+#include <opencv2/core/core.hpp>
+#endif
 
 namespace Ui {
 class MainWindow;
@@ -28,6 +33,15 @@ private:
 
     // Widget for opengl
     GLWidget *glw;
+
+    // image
+    unsigned char *img;
+#ifdef USE_CV
+    cv::Mat cvImg;
+#endif
+
+    // opencl
+    CLMatTranspose clmt;
 
 protected:
     // keyboard event

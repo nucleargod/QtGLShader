@@ -13,15 +13,15 @@ public:
   CLMatTranspose();
   
   // step by step
-  bool setInput(pxType *r, size_t cols, size_t rows, size_t nc);
+  bool setInput(pxType *r, size_t cols, size_t rows);
   void transposeAsync();
   bool getOutput(pxType *output);
   
   //all-in-one
-  bool transpose(pxType *output, pxType *r, size_t cols, size_t rows, size_t nc){
-    if(!setInput(r, cols, rows, nc)) return false;
+  bool transpose(pxType *output, pxType *r, size_t cols, size_t rows){
+    if(!setInput(r, cols, rows)) return false;
     transposeAsync();
-    if(!getOutput(output)) return false;
+    return getOutput(output);
   }
   
   //get time usage
@@ -38,7 +38,7 @@ protected:
   // for time
   cl_event event, event_m;
   // buffer
-  size_t bsize;
+  size_t bsize, threads;
   cl_mem clSrc, clDst;
   
   bool buildKernel();

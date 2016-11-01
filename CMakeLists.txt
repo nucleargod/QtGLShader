@@ -15,15 +15,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(UI_NAME "QtGL")
 
 # Find library
-find_package(Qt5Widgets)
-find_package(Qt5OpenGL)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package( OpenCL )
+find_package( CUDA )
 if(USE_CV)
   find_package(OpenCV)
   add_definitions("-DUSE_CV")
 endif(USE_CV)
-find_package(OpenGL REQUIRED)
-find_package( OpenCL )
-find_package( CUDA )
 
 # get 3rd source and lib
 if(USE_CV)

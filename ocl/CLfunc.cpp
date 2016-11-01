@@ -15,15 +15,16 @@ inline void __checkErrors(cl_int err, const char *file, const int line ){
 #endif
 
 const char *CLMatTranspose::kernelSource = 
-  "__kernel void matTrans                  \n"
-  "(__global int *dst, __global int *src, const int x_dim){\n"
-  "  const int idx_x = get_global_id(0);   \n"
-  "  if(idx_x>=x_dim) return;              \n"
-  "  int i, sid = idx_x, did = idx_x*x_dim;\n"
-  "  for (i = 0; i<y_dim; i++){            \n"
-  "    dst[did] = src[sid];                \n"
-  "    sid += x_dim; did++;                \n"
-  "  }                                     \n"
+  "__kernel void matTrans                   \n"
+  "(__global int *dst, __global int *src, const int yDimS, const int xDimS){\n"
+  "  const int idxS = get_global_id(0);     \n"
+  "  if(idxS >= xDimS) return;              \n"
+  "  int rowLenS = xDimS, rowLenD = yDimS;  \n"
+  "  int i, idS = idxS, idD = idxS*rowLenD; \n"
+  "  for (i = 0; i<yDimS; i++){             \n"
+  "    dst[idD  ] = src[idS  ];             \n" //one int has four byte RGBA
+  "    idS += rowLenS; idD ++;              \n"
+  "  }                                      \n"
   "}\n";
 
 CLMatTranspose::CLMatTranspose() : bsize(0)
@@ -33,10 +34,10 @@ CLMatTranspose::CLMatTranspose() : bsize(0)
   /* Get the CL device */
   checkErrors( clGetPlatformIDs(1, &platform, NULL));
   checkErrors( clGetDeviceIDs(platform, CL_DEVICE_TYPE_DEFAULT, 1, &device, NULL));
+  printf("cl platform: %d, device: %d\n", platform, device);
 
   /* Initialize the CL device............. */
   context = clCreateContext(0, 1, &device, NULL, NULL, &error);
-  checkErrors(error);
   queue = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &error);
   checkErrors(error);
   
@@ -44,31 +45,34 @@ CLMatTranspose::CLMatTranspose() : bsize(0)
 }
 
 //*--- step by step
-bool CLMatTranspose::setInput(
-  pxType *r, size_t cols, size_t rows, size_t nc){
+bool CLMatTranspose::setInput(pxType *r, size_t cols, size_t rows){
   cl_int error;
-  bsize = cols*rows*nc*sizeof(pxType);
+  bsize = cols*rows*4*sizeof(pxType);
+  threads = cols;
   
   /* Initialize the CL device memory  */
   clSrc = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, bsize, r, &error);
-  checkErrors(error);
   clDst = clCreateBuffer(context, CL_MEM_WRITE_ONLY, bsize, NULL, &error);
   checkErrors(error);
   
   /* set args */
   checkErrors( clSetKernelArg(matTransKernel, 0, sizeof(cl_mem), &clDst ));
   checkErrors( clSetKernelArg(matTransKernel, 1, sizeof(cl_mem), &clSrc));
-  checkErrors( clSetKernelArg(matTransKernel, 2, sizeof(int)   , &cols ));
+  checkErrors( clSetKernelArg(matTransKernel, 2, sizeof(int)   , &rows ));
+  checkErrors( clSetKernelArg(matTransKernel, 3, sizeof(int)   , &cols ));
   
   return true;
 }
 void CLMatTranspose::transposeAsync(){
-  size_t global[] = {1024};
+  size_t global[] = {threads};
   checkErrors( clEnqueueNDRangeKernel(queue, matTransKernel, 1, NULL, global, NULL, 0, NULL, &event));
 }
 bool CLMatTranspose::getOutput(pxType *output){
   checkErrors( clEnqueueReadBuffer(queue, clDst, CL_TRUE, 0, bsize, output, 0, NULL, &event_m));
+  checkErrors( clReleaseMemObject(clSrc));
+  checkErrors( clReleaseMemObject(clDst));
   checkErrors( clFinish(queue));
+  return true;
 }
 
 //*--- get time usage

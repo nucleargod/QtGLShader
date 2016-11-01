@@ -135,7 +135,6 @@ void GLWidget::paintGL(){
 //*--- update utils
 #ifdef USE_CV
 void GLWidget::updateTexture(const cv::Mat &rgb){
-    qDebug() << "updateTexture";
     if(rgb.empty()){
         qDebug() << "updateTexture with noTex";
         _texW = 1, _texH = 1;
@@ -149,13 +148,24 @@ void GLWidget::updateTexture(const cv::Mat &rgb){
         makeCurrent();
         glBindTexture(GL_TEXTURE_2D, _tex);
         //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_RGB, GL_FLOAT, rgb.data);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_BGR, GL_UNSIGNED_BYTE, rgb.data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_BGRA, GL_UNSIGNED_BYTE, rgb.data);
     }
 
     needUpdate = true;
     update();
 }
 #endif
+
+void GLWidget::updateTexture(const void *img, size_t w, size_t h){
+    if(img == NULL) return;
+    qDebug() << "updateTexture with pointer";
+    _texW = w; _texH = h;
+    makeCurrent();
+    glBindTexture(GL_TEXTURE_2D, _tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _texW, _texH, 0, GL_BGRA, GL_UNSIGNED_BYTE, img);
+    needUpdate = true;
+    update();
+}
 
 void GLWidget::updateParam(float expo){
     _expo  = expo ;

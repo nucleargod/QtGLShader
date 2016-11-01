@@ -30,6 +30,7 @@ public:
 #ifdef USE_CV
     virtual void updateTexture(const cv::Mat &img);
 #endif
+    virtual void updateTexture(const void *img, size_t w, size_t h);
     virtual void updateParam(float expo);
     inline void resetTrans(){
         _zoom=(1), _dx=(0), _dy=(0);
