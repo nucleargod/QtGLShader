@@ -122,6 +122,7 @@ void GLWidget::paintGL(){
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, allIndices);//*/
 
     /*opengl 1.0
+    glBindTexture(GL_TEXTURE_2D, _tex);
     glBegin(GL_TRIANGLE_FAN);
     glVertex2d( _x + _dx,  _y + _dy); glTexCoord2d(0, 0);
     glVertex2d(-_x + _dx,  _y + _dy); glTexCoord2d(0, 1);
