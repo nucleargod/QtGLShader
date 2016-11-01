@@ -23,7 +23,7 @@ void GLWidget::initializeGL(){
     makeCurrent();
     initializeOpenGLFunctions();
 
-    //* debug output for checking your opengl version
+    //*--- debug output for checking your opengl version
     qDebug() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();
     QString versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
     qDebug() << "Driver Version String:" << versionString;

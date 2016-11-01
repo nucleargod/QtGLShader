@@ -9,7 +9,6 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow)
-    //, _tmpImg() // buffer fields for tonemapping
 {
     ui->setupUi(this);
     statBar = ui->statusBar;
@@ -20,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
     glw->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
     glw->setMouseTracking(true);
     glw->setStateBar(statBar);
-    //glw->updateParam(_expo, _bias, _gama, _lwMax);
     glw->update();
 
     // menu
@@ -58,13 +56,14 @@ bool MainWindow::openImage(){
     QString fileName = QFileDialog::getOpenFileName(this, 
         "讀取圖片", "./", "*", 0, QFileDialog::DontUseNativeDialog);
     if (fileName.isEmpty()) return false;
-#ifdef WIN32
+
+#ifdef WIN32 //convert path
     std::string path(fileName.toLocal8Bit().constData());
 #else
     std::string path(fileName.toUtf8().constData());
 #endif
 
-#ifdef USE_CV
+#ifdef USE_CV //read image with opencv
     glw->log("讀取進度: %s ...", path.c_str());
     cv::Mat img = cv::imread(path.c_str());
     glw->updateTexture(img);

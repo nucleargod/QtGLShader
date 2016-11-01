@@ -61,6 +61,7 @@ protected:
 	virtual void mouseMoveEvent   (QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
     
+    //shader source
     static const std::string vertSrc;
     static const std::string fragSrc;
 

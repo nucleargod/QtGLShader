@@ -15,13 +15,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(UI_NAME "QtGL")
 
 # Find library
-find_package(Qt5Widgets)
-find_package(Qt5OpenGL)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL REQUIRED)
+find_package(OpenGL REQUIRED)
 if(USE_CV)
   find_package(OpenCV)
   add_definitions("-DUSE_CV")
 endif(USE_CV)
-find_package(OpenGL REQUIRED)
 
 # get 3rd source and lib
 if(USE_CV)
@@ -32,7 +31,7 @@ list(APPEND Third_LIB_LIST ${OPENGL_LIBRARIES})
 list(APPEND Third_DIR_LIST ${OPENGL_INCLUDE_DIR})
 
 # global ui src
-aux_source_directory(${PROJECT_SOURCE_DIR}/${UI_NAME}  UI_SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/${UI_NAME} UI_SRC_LIST)
 set(UI_QUI  ${PROJECT_SOURCE_DIR}/${UI_NAME}/mainwindow.ui)
 list(APPEND UI_QHDR ${PROJECT_SOURCE_DIR}/${UI_NAME}/mainwindow.h )
 list(APPEND UI_QHDR ${PROJECT_SOURCE_DIR}/${UI_NAME}/GLWidget.h )
